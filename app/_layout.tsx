@@ -1,37 +1,45 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import 'react-native-reanimated'
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+import * as SplashScreen from 'expo-splash-screen'
+
+import { useEffect, useState } from 'react'
+
+import { Drawer } from 'expo-router/drawer'
+import LoginScreen from './login'
+import { Provider } from 'react-redux'
+import { store } from '@/store/store'
+import { useFonts } from 'expo-font'
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync()
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+	const [loaded] = useFonts({
+		SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+	})
+	const [isAuthenticated, setIsAuthenticated] = useState(false)
 
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+	useEffect(() => {
+		if (loaded) {
+			SplashScreen.hideAsync()
+		}
+	}, [loaded])
 
-  if (!loaded) {
-    return null;
-  }
+	if (!loaded) {
+		return null
+	}
 
-  return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-    </ThemeProvider>
-  );
+	return (
+		<Provider store={store}>
+			{isAuthenticated ? (
+				<Drawer initialRouteName="home">
+					<Drawer.Screen name="home" options={{ title: 'Home' }} />
+					<Drawer.Screen name="profile" options={{ title: 'Mi Perfil' }} />
+					<Drawer.Screen name="suport" options={{ title: 'Soporte' }} />
+				</Drawer>
+			) : (
+				<LoginScreen onLogin={setIsAuthenticated} />
+			)}
+		</Provider>
+	)
 }
